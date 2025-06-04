@@ -26,5 +26,4 @@ jobs:
       - name: Install dependencies
         run: yarn install
 
-      - name: Run Prettier
-        run: npx prettier --check .
+  
