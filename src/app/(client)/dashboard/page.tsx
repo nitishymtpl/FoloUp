@@ -12,6 +12,9 @@ import { useInterviews } from "@/contexts/interviews.context";
 import Modal from "@/components/dashboard/Modal";
 import { Gem, Plus } from "lucide-react";
 import Image from "next/image";
+import { RechargeModal } from '@/components/dashboard/rechargeModal';
+import Link from 'next/link';
+import { toast } from 'sonner'; // Added import for toast
 
 function Interviews() {
   const { interviews, interviewsLoading } = useInterviews();
@@ -21,6 +24,13 @@ function Interviews() {
   const [allowedResponsesCount, setAllowedResponsesCount] =
     useState<number>(10);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+
+  // New state for credits
+  const [userCredits, setUserCredits] = useState<number | null>(null);
+  const [isLoadingCredits, setIsLoadingCredits] = useState(true);
+  const [creditError, setCreditError] = useState<string | null>(null);
+  const [isRechargeModalOpen, setIsRechargeModalOpen] = useState(false);
+
 
   function InterviewsLoader() {
     return (
@@ -56,6 +66,70 @@ function Interviews() {
 
     fetchOrganizationData();
   }, [organization]);
+
+  useEffect(() => {
+    const fetchCredits = async () => {
+      setIsLoadingCredits(true);
+      setCreditError(null);
+      try {
+        const response = await fetch('/api/credits/balance');
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || `Failed to fetch credits: ${response.statusText}`);
+        }
+        const data = await response.json();
+        setUserCredits(data.balance);
+      } catch (error: any) {
+        console.error("Failed to fetch user credits:", error);
+        setCreditError(error.message);
+      } finally {
+        setIsLoadingCredits(false);
+      }
+    };
+    fetchCredits();
+
+    // Check for recharge status from URL query parameters
+    const checkRechargeStatus = () => {
+      // Ensure this code runs only on the client side
+      if (typeof window !== 'undefined') {
+        const searchParams = new URLSearchParams(window.location.search);
+        const rechargeStatus = searchParams.get('recharge_status');
+        // Example: Lemon Squeezy might use 'checkout_id' or similar as a unique identifier
+        const checkoutId = searchParams.get('checkout_id');
+
+        if (rechargeStatus && checkoutId) {
+          const toastShownKey = `recharge_toast_shown_${checkoutId}`;
+
+          if (!sessionStorage.getItem(toastShownKey)) {
+            if (rechargeStatus === 'success') {
+              toast.success("Payment successful! Your credits will be updated shortly once processing is complete.");
+            } else if (rechargeStatus === 'cancelled') {
+              toast.warn("Your payment process was cancelled or failed. Please try again if you wish to recharge.");
+            } else if (rechargeStatus === 'error') { // Hypothetical error status
+              toast.error("There was an error with your payment. Please contact support if this persists.");
+            }
+            sessionStorage.setItem(toastShownKey, 'true');
+          }
+
+          // Clean URL (optional, but good practice)
+          // This removes all query parameters. If other params are needed, adjust accordingly.
+          const newUrl = window.location.pathname;
+          window.history.replaceState({}, '', newUrl);
+        } else if (rechargeStatus === 'success' && !checkoutId) {
+            // Fallback if no unique ID is present, show toast once per session or less ideally.
+            const genericToastShownKey = `recharge_toast_shown_generic_success`;
+            if (!sessionStorage.getItem(genericToastShownKey)) {
+                toast.success("Payment successful! Credits will be updated shortly.");
+                sessionStorage.setItem(genericToastShownKey, 'true');
+                const newUrl = window.location.pathname;
+                window.history.replaceState({}, '', newUrl);
+            }
+        }
+      }
+    };
+    checkRechargeStatus();
+
+  }, []); // Empty dependency array: runs once on mount
 
   useEffect(() => {
     const fetchResponsesCount = async () => {
@@ -97,6 +171,37 @@ function Interviews() {
         <h3 className=" text-sm tracking-tight text-gray-600 font-medium ">
           Start getting responses now!
         </h3>
+
+        {/* Credits Display Section */}
+        <div className="my-4 p-4 border rounded-lg shadow-sm">
+          <h3 className="text-lg font-semibold mb-2">Your Credits</h3>
+          {isLoadingCredits && <p>Loading credits...</p>}
+          {creditError && <p style={{ color: 'red' }}>Error: {creditError}</p>}
+          {userCredits !== null && !creditError && (
+            <p className="text-xl">Current Balance: <span className="font-bold text-green-600">${userCredits.toFixed(2)}</span></p>
+          )}
+          <div className="flex space-x-2 mt-2">
+            <button
+              onClick={() => setIsRechargeModalOpen(true)}
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+            >
+              Recharge Credits
+            </button>
+            <Link href="/dashboard/transactions">
+              <button
+                className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors"
+              >
+                View Transaction History
+              </button>
+            </Link>
+          </div>
+          <RechargeModal
+            isOpen={isRechargeModalOpen}
+            onClose={() => setIsRechargeModalOpen(false)}
+          />
+        </div>
+        {/* End Credits Display Section */}
+
         <div className="relative flex items-center mt-1 flex-wrap">
           {currentPlan == "free_trial_over" ? (
             <Card className=" flex bg-gray-200 items-center border-dashed border-gray-700 border-2 hover:scale-105 ease-in-out duration-300 h-60 w-56 ml-1 mr-3 mt-4 rounded-xl shrink-0 overflow-hidden shadow-md">

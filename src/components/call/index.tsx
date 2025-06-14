@@ -222,37 +222,76 @@ function Call({ interview }: InterviewProps) {
       oldUserEmails.includes(email) ||
       (interview?.respondents && !interview?.respondents.includes(email));
 
-    if (OldUser) {
-      setIsOldUser(true);
-    } else {
+    setLoading(true); // setLoading(true) was already here, kept for context
+    try {
+      const oldUserEmails: string[] = (
+        await ResponseService.getAllEmails(interview.id)
+      ).map((item) => item.email);
+      const OldUser =
+        oldUserEmails.includes(email) ||
+        (interview?.respondents && !interview?.respondents.includes(email));
+
+      if (OldUser) {
+        setIsOldUser(true);
+        // setLoading(false) will be handled in finally
+        return;
+      }
+
+      const registerCallPayload = {
+        dynamic_data: data,
+        interviewer_id: interview?.interviewer_id,
+        interview_id: interview.id, // *** Added interview_id ***
+      };
+
       const registerCallResponse: registerCallResponseType = await axios.post(
         "/api/register-call",
-        { dynamic_data: data, interviewer_id: interview?.interviewer_id },
+        registerCallPayload
       );
-      if (registerCallResponse.data.registerCallResponse.access_token) {
+
+      if (registerCallResponse.data.registerCallResponse?.callDetail?.access_token) { // Adjusted path based on register-call change
         await webClient
           .startCall({
             accessToken:
-              registerCallResponse.data.registerCallResponse.access_token,
+              registerCallResponse.data.registerCallResponse.callDetail.access_token,
           })
-          .catch(console.error);
+          .catch((err) => { // Added specific error handling for startCall
+            console.error("Error starting Retell webClient call:", err);
+            toast.error("Failed to connect to call service. Please check your connection.");
+            throw err; // Re-throw to be caught by outer catch
+          });
         setIsCalling(true);
         setIsStarted(true);
+        setCallId(registerCallResponse?.data?.registerCallResponse?.callDetail?.call_id); // Adjusted path
 
-        setCallId(registerCallResponse?.data?.registerCallResponse?.call_id);
-
-        const response = await createResponse({
+        // Create response record in DB
+        await createResponse({
           interview_id: interview.id,
-          call_id: registerCallResponse.data.registerCallResponse.call_id,
+          call_id: registerCallResponse.data.registerCallResponse.callDetail.call_id,
           email: email,
           name: name,
         });
       } else {
-        console.log("Failed to register call");
+        console.log("Failed to register call: No access token or callDetail in response", registerCallResponse.data);
+        toast.error("Could not initiate call session. Please try again.");
       }
+    } catch (error: any) {
+      console.error("Error during startConversation:", error);
+      if (error.response && error.response.status === 402) {
+        toast.error("Insufficient credits to start the interview. Please recharge your account.");
+      } else if (error.response) {
+        // Attempt to parse error from server if available
+        const serverError = error.response.data?.error || 'Server error';
+        toast.error(`Failed to start interview: ${serverError}. Please try again.`);
+      } else if (error.message && error.message.includes("call service")) {
+        // This handles the re-thrown error from webClient.startCall
+        // Toast already shown, so just log or do nothing additional here
+      }
+      else {
+        toast.error("Failed to start interview due to a network or unexpected issue. Please try again.");
+      }
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   useEffect(() => {

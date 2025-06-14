@@ -1,4 +1,5 @@
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { CreditService } from './credits.service';
 // Fallback for build time
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -41,6 +42,12 @@ const getClientById = async (
         return [];
       }
 
+      // Add initial credits for new user
+      if (data && data.length > 0) {
+        // The 'id' parameter of getClientById is the new user's ID
+        await CreditService.addCredits('user', id, 2.00, 'initial', 'Initial free trial credit');
+      }
+
       return data ? data[0] : null;
     }
 
@@ -54,6 +61,12 @@ const getClientById = async (
         console.log(error);
 
         return [];
+      }
+
+      // Add initial credits for new organization
+      if (data && data.length > 0 && organization_id) {
+        // The 'organization_id' parameter is the new organization's ID
+        await CreditService.addCredits('organization', organization_id, 2.00, 'initial', 'Initial free trial credit');
       }
 
       return data ? data[0] : null;
