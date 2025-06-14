@@ -8,14 +8,16 @@ CREATE TABLE organization (
     name TEXT,
     image_url TEXT,
     allowed_responses_count INTEGER,
-    plan plan
+    plan plan,
+    credits NUMERIC(10, 2) DEFAULT 0.00
 );
 
 CREATE TABLE "user" (
     id TEXT PRIMARY KEY,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW()),
     email TEXT,
-    organization_id TEXT REFERENCES organization(id)
+    organization_id TEXT REFERENCES organization(id),
+    credits NUMERIC(10, 2) DEFAULT 0.00
 );
 
 CREATE TABLE interviewer (
@@ -82,3 +84,19 @@ CREATE TABLE feedback (
     feedback TEXT,
     satisfaction INTEGER
 );
+
+-- Create credit_transactions table
+CREATE TABLE credit_transactions (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id TEXT REFERENCES "user"(id) ON DELETE SET NULL,
+    organization_id TEXT REFERENCES organization(id) ON DELETE SET NULL,
+    amount NUMERIC(10, 2) NOT NULL,
+    type TEXT NOT NULL,
+    description TEXT,
+    payment_gateway_transaction_id TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW())
+);
+
+-- Add indexes for credit_transactions table
+CREATE INDEX idx_credit_transactions_user_id ON credit_transactions(user_id);
+CREATE INDEX idx_credit_transactions_organization_id ON credit_transactions(organization_id);

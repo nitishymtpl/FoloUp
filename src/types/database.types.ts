@@ -169,6 +169,7 @@ export type Database = {
           image_url: string | null;
           name: string | null;
           plan: Database["public"]["Enums"]["plan"] | null;
+          credits: number | null;
         };
         Insert: {
           allowed_responses_count?: number | null;
@@ -177,6 +178,7 @@ export type Database = {
           image_url?: string | null;
           name?: string | null;
           plan?: Database["public"]["Enums"]["plan"] | null;
+          credits?: number | null;
         };
         Update: {
           allowed_responses_count?: number | null;
@@ -185,8 +187,57 @@ export type Database = {
           image_url?: string | null;
           name?: string | null;
           plan?: Database["public"]["Enums"]["plan"] | null;
+          credits?: number | null;
         };
         Relationships: [];
+      };
+      credit_transactions: {
+        Row: {
+          id: string;
+          user_id: string | null;
+          organization_id: string | null;
+          amount: number;
+          type: string;
+          description: string | null;
+          payment_gateway_transaction_id: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id?: string | null;
+          organization_id?: string | null;
+          amount: number;
+          type: string;
+          description?: string | null;
+          payment_gateway_transaction_id?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string | null;
+          organization_id?: string | null;
+          amount?: number;
+          type?: string;
+          description?: string | null;
+          payment_gateway_transaction_id?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "credit_transactions_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "user";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "credit_transactions_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organization";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       response: {
         Row: {
@@ -253,18 +304,21 @@ export type Database = {
           email: string | null;
           id: string;
           organization_id: string | null;
+          credits: number | null;
         };
         Insert: {
           created_at?: string;
           email?: string | null;
           id: string;
           organization_id?: string | null;
+          credits?: number | null;
         };
         Update: {
           created_at?: string;
           email?: string | null;
           id?: string;
           organization_id?: string | null;
+          credits?: number | null;
         };
         Relationships: [];
       };
