@@ -38,6 +38,17 @@ import {
 } from "@/components/ui/alert-dialog";
 import { InterviewerService } from "@/services/interviewers.service";
 
+// DEVELOPER NOTE:
+// The layout and viewport have been adjusted for better mobile compatibility.
+// However, WebRTC behavior, especially microphone permissions and call stability,
+// can vary significantly across mobile browsers (e.g., Safari on iOS, Chrome on Android,
+// and other vendor-specific browsers) and their versions.
+//
+// If mobile-specific call issues persist, thorough testing is required:
+// 1. Verify microphone permissions are correctly requested and handled.
+// 2. Test call initiation, audio input/output, and call termination on target mobile devices/browsers.
+// 3. Check browser console logs on mobile for any WebRTC-specific errors.
+// 4. Consult the RetellWebClient documentation for any mobile-specific considerations or known issues.
 const webClient = new RetellWebClient();
 
 type InterviewProps = {
@@ -265,7 +276,7 @@ function Call({ interview }: InterviewProps) {
     if (isEnded) {
       const updateInterview = async () => {
         await ResponseService.saveResponse(
-          { is_ended: true, tab_switch_count: tabSwitchCount },
+          { is_ended: true, tab_switch_count: tabSwitchCount, duration: Number(currentTimeDuration) },
           callId,
         );
       };
@@ -273,7 +284,7 @@ function Call({ interview }: InterviewProps) {
       updateInterview();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isEnded]);
+  }, [isEnded, callId, tabSwitchCount, currentTimeDuration]);
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100">
@@ -321,7 +332,7 @@ function Call({ interview }: InterviewProps) {
               )}
             </CardHeader>
             {!isStarted && !isEnded && !isOldUser && (
-              <div className="w-fit min-w-[400px] max-w-[400px] mx-auto mt-2  border border-indigo-200 rounded-md p-2 m-2 bg-slate-50">
+              <div className="w-[90%] max-w-md sm:w-auto sm:min-w-[360px] mx-auto mt-2 border border-indigo-200 rounded-md p-2 m-2 bg-slate-50">
                 <div>
                   {interview?.logo_url && (
                     <div className="p-1 flex justify-center">
@@ -498,7 +509,7 @@ function Call({ interview }: InterviewProps) {
             )}
 
             {isEnded && !isOldUser && (
-              <div className="w-fit min-w-[400px] max-w-[400px] mx-auto mt-2  border border-indigo-200 rounded-md p-2 m-2 bg-slate-50  absolute -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2">
+              <div className="w-[90%] max-w-md sm:w-auto sm:min-w-[360px] mx-auto mt-2 border border-indigo-200 rounded-md p-2 m-2 bg-slate-50 absolute -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2">
                 <div>
                   <div className="p-2 font-normal text-base mb-4 whitespace-pre-line">
                     <CheckCircleIcon className="h-[2rem] w-[2rem] mx-auto my-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0 text-indigo-500 " />
@@ -538,7 +549,7 @@ function Call({ interview }: InterviewProps) {
               </div>
             )}
             {isOldUser && (
-              <div className="w-fit min-w-[400px] max-w-[400px] mx-auto mt-2  border border-indigo-200 rounded-md p-2 m-2 bg-slate-50  absolute -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2">
+              <div className="w-[90%] max-w-md sm:w-auto sm:min-w-[360px] mx-auto mt-2 border border-indigo-200 rounded-md p-2 m-2 bg-slate-50 absolute -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2">
                 <div>
                   <div className="p-2 font-normal text-base mb-4 whitespace-pre-line">
                     <CheckCircleIcon className="h-[2rem] w-[2rem] mx-auto my-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0 text-indigo-500 " />

@@ -12,6 +12,7 @@ import { useInterviews } from "@/contexts/interviews.context";
 import Modal from "@/components/dashboard/Modal";
 import { Gem, Plus } from "lucide-react";
 import Image from "next/image";
+import BillingHistory from "@/components/dashboard/billingHistory";
 
 function Interviews() {
   const { interviews, interviewsLoading } = useInterviews();
@@ -179,6 +180,14 @@ function Interviews() {
             </>
           )}
         </div>
+        {organization?.id && (
+          <>
+            <h2 className="mr-2 text-2xl font-semibold tracking-tight mt-8">
+              Billing History
+            </h2>
+            <BillingHistory organizationId={organization.id} />
+          </>
+        )}
       </div>
     </main>
   );

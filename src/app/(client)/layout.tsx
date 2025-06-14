@@ -43,12 +43,13 @@ export default function RootLayout({
       <head>
         <title>{metadata.title}</title>
         <meta name="description" content={metadata.description} />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/browser-client-icon.ico" />
       </head>
       <body
         className={cn(
           inter.className,
-          "antialiased overflow-hidden min-h-screen",
+          "antialiased md:overflow-hidden min-h-screen",
         )}
       >
         <ClerkProvider
@@ -61,7 +62,7 @@ export default function RootLayout({
             <div className="flex flex-row h-screen">
               {!pathname.includes("/sign-in") &&
                 !pathname.includes("/sign-up") && <SideMenu />}
-              <div className="ml-[200px] pt-[64px] h-full overflow-y-auto flex-grow">
+              <div className="md:ml-[200px] pt-[64px] h-full overflow-y-auto flex-grow">
                 {children}
               </div>
             </div>

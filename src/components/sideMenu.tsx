@@ -9,7 +9,7 @@ function SideMenu() {
   const router = useRouter();
 
   return (
-    <div className="z-[10] bg-slate-100 p-6 w-[200px] fixed top-[64px] left-0 h-full">
+    <div className="z-[10] bg-slate-100 p-6 w-[200px] fixed top-[64px] left-0 h-full hidden md:block">
       <div className="flex flex-col gap-1">
         <div className="flex flex-col justify-between gap-2">
           <div

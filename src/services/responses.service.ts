@@ -1,4 +1,6 @@
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { BillingService } from "../services/billing.service";
+import { InterviewService } from "../services/interviews.service";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -21,17 +23,49 @@ const createResponse = async (payload: any) => {
 };
 
 const saveResponse = async (payload: any, call_id: string) => {
-  const { error, data } = await supabase
+  const { error: updateError, data: updatedResponseData } = await supabase
     .from("response")
     .update({ ...payload })
-    .eq("call_id", call_id);
-  if (error) {
-    console.log(error);
+    .eq("call_id", call_id)
+    .select(); // Assuming .select() returns the updated row(s)
 
-    return [];
+  if (updateError) {
+    console.error("Error updating response:", updateError);
+    return null; // Return null or appropriate error response
   }
 
-  return data;
+  if (!updatedResponseData || updatedResponseData.length === 0) {
+    console.error("No response data returned after update for call_id:", call_id);
+    return null;
+  }
+
+  const currentResponse = updatedResponseData[0];
+
+
+  // Create a billable event if duration is positive
+  if (payload.duration && payload.duration > 0 && currentResponse.interview_id && currentResponse.id) {
+    try {
+      const interviewDetails = await InterviewService.getInterviewById(currentResponse.interview_id);
+      if (interviewDetails && interviewDetails.organization_id) {
+        const cost = BillingService.calculateInterviewCost(payload.duration);
+        await BillingService.createBillableEvent(
+          interviewDetails.organization_id,
+          currentResponse.interview_id,
+          currentResponse.id,
+          payload.duration,
+          cost,
+        );
+      } else {
+        console.error("Could not retrieve interview details or organization_id for interview_id:", currentResponse.interview_id);
+      }
+    } catch (billingError) {
+      console.error("Error creating billable event:", billingError);
+      // Decide if this error should affect the overall outcome of saveResponse
+      // For now, just logging, the response update itself was successful.
+    }
+  }
+
+  return updatedResponseData; // Return the updated response data
 };
 
 const getAllResponses = async (interviewId: string) => {
