@@ -332,7 +332,7 @@ function Call({ interview }: InterviewProps) {
               )}
             </CardHeader>
             {!isStarted && !isEnded && !isOldUser && (
-              <div className="w-[90%] max-w-md sm:w-auto sm:min-w-[360px] mx-auto mt-2 border border-indigo-200 rounded-md p-2 m-2 bg-slate-50">
+              <div className="w-[90%] max-w-md sm:w-auto mx-auto mt-2 border border-indigo-200 rounded-md p-2 m-2 bg-slate-50">
                 <div>
                   {interview?.logo_url && (
                     <div className="p-1 flex justify-center">
@@ -427,7 +427,7 @@ function Call({ interview }: InterviewProps) {
                 <div className="border-x-2 border-grey w-[50%] my-auto min-h-[70%]">
                   <div className="flex flex-col justify-evenly">
                     <div
-                      className={`text-[22px] w-[80%] md:text-[26px] mt-4 min-h-[250px] mx-auto px-6`}
+                      className={`text-[22px] w-full md:text-[26px] mt-4 mx-auto px-2 break-words h-auto`}
                     >
                       {lastInterviewerResponse}
                     </div>
@@ -451,7 +451,7 @@ function Call({ interview }: InterviewProps) {
                 <div className="flex flex-col justify-evenly w-[50%]">
                   <div
                     ref={lastUserResponseRef}
-                    className={`text-[22px] w-[80%] md:text-[26px] mt-4 mx-auto h-[250px] px-6 overflow-y-auto`}
+                    className={`text-[22px] w-full md:text-[26px] mt-4 mx-auto px-2 break-words h-auto`}
                   >
                     {lastUserResponse}
                   </div>
@@ -509,7 +509,7 @@ function Call({ interview }: InterviewProps) {
             )}
 
             {isEnded && !isOldUser && (
-              <div className="w-[90%] max-w-md sm:w-auto sm:min-w-[360px] mx-auto mt-2 border border-indigo-200 rounded-md p-2 m-2 bg-slate-50 absolute -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2">
+              <div className="w-[90%] max-w-md sm:w-auto mx-auto mt-2 border border-indigo-200 rounded-md p-2 m-2 bg-slate-50 absolute -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2">
                 <div>
                   <div className="p-2 font-normal text-base mb-4 whitespace-pre-line">
                     <CheckCircleIcon className="h-[2rem] w-[2rem] mx-auto my-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0 text-indigo-500 " />
@@ -549,7 +549,7 @@ function Call({ interview }: InterviewProps) {
               </div>
             )}
             {isOldUser && (
-              <div className="w-[90%] max-w-md sm:w-auto sm:min-w-[360px] mx-auto mt-2 border border-indigo-200 rounded-md p-2 m-2 bg-slate-50 absolute -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2">
+              <div className="w-[90%] max-w-md sm:w-auto mx-auto mt-2 border border-indigo-200 rounded-md p-2 m-2 bg-slate-50 absolute -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2">
                 <div>
                   <div className="p-2 font-normal text-base mb-4 whitespace-pre-line">
                     <CheckCircleIcon className="h-[2rem] w-[2rem] mx-auto my-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0 text-indigo-500 " />
@@ -567,19 +567,6 @@ function Call({ interview }: InterviewProps) {
             )}
           </div>
         </Card>
-        <a
-          className="flex flex-row justify-center align-middle mt-3"
-          href="https://folo-up.co/"
-          target="_blank"
-        >
-          <div className="text-center text-md font-semibold mr-2  ">
-            Powered by{" "}
-            <span className="font-bold">
-              Folo<span className="text-indigo-600">Up</span>
-            </span>
-          </div>
-          <ArrowUpRightSquareIcon className="h-[1.5rem] w-[1.5rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0 text-indigo-500 " />
-        </a>
       </div>
     </div>
   );
